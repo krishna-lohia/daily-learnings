@@ -3,143 +3,167 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Today I Learned</title>
+    <title>Today I Learned — Finance & Business Insights</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <main class="page">
-        <header class="hero">
-            <p class="eyebrow">Daily insights on finance, business & economics</p>
-            <h1>Today I Learned</h1>
-            <p class="subtitle">One interesting concept from <a href="https://thedailybrief.zerodha.com" target="_blank" rel="noopener noreferrer">The Daily Brief</a>, explained in plain English.</p>
-            <div class="how-it-works">
-                <p class="how-title">What you get:</p>
-                <p class="how-text">Clear, concise explanations of complex finance and business topics. No jargon. No fluff. Just the insight that matters.</p>
-                <p class="how-text">Want more? Click "Give me another" to explore different topics, or read the full article for deeper context.</p>
+    <main class="container">
+        <header class="header">
+            <div class="header-content">
+                <p class="eyebrow">Daily insights on finance, business & economics</p>
+                <h1 class="title">Today I Learned</h1>
+                <p class="tagline">Clear explanations of complex topics from <a href="https://thedailybrief.zerodha.com" target="_blank" rel="noopener noreferrer">The Daily Brief</a></p>
+            </div>
+            <div class="info-box">
+                <p class="info-text">One interesting concept, explained simply. Click arrows or use your keyboard to explore more.</p>
             </div>
         </header>
 
-        <section class="card" id="learning-container">
-            <div class="card-header">
-                <div class="learning-title" id="learning-title"></div>
-                <div class="learning-date" id="learning-date"></div>
+        <section class="learning-card">
+            <div class="learning-header">
+                <h2 class="learning-title" id="learning-title">Loading...</h2>
+                <div class="learning-meta">
+                    <span class="learning-date" id="learning-date"></span>
+                    <span class="learning-counter" id="learning-counter"></span>
+                </div>
             </div>
-            <div class="learning" id="learning-content"></div>
-            <div class="note" id="learning-note"></div>
-            <div class="card-actions">
-                <button class="primary" id="next-learning" type="button">Give me another</button>
-                <a href="#" class="article-link" id="article-link" target="_blank" rel="noopener noreferrer">Read the source</a>
+
+            <div class="learning-content" id="learning-content">
+                <p>Loading your learning...</p>
+            </div>
+
+            <div class="learning-actions">
+                <button class="nav-btn nav-btn-prev" id="prev-btn" aria-label="Previous learning">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M15 18l-6-6 6-6"/>
+                    </svg>
+                    <span>Previous</span>
+                </button>
+
+                <a href="#" class="source-link" id="article-link" target="_blank" rel="noopener noreferrer">
+                    Read full article
+                </a>
+
+                <button class="nav-btn nav-btn-next" id="next-btn" aria-label="Next learning">
+                    <span>Next</span>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 18l6-6-6-6"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="keyboard-hint">
+                <span>Use ← → arrow keys to navigate</span>
             </div>
         </section>
 
         <footer class="footer">
-            <span>Source: The Daily Brief by Zerodha</span>
+            <p>Content sourced from <a href="https://thedailybrief.zerodha.com" target="_blank" rel="noopener noreferrer">The Daily Brief by Zerodha</a></p>
         </footer>
     </main>
 
     <script>
         let allLearnings = [];
         let currentIndex = 0;
-        const nextButton = document.getElementById('next-learning');
-        const noteEl = document.getElementById('learning-note');
+
         const titleEl = document.getElementById('learning-title');
         const dateEl = document.getElementById('learning-date');
+        const counterEl = document.getElementById('learning-counter');
         const contentEl = document.getElementById('learning-content');
         const articleLinkEl = document.getElementById('article-link');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
 
         function formatDate(value) {
             if (!value) return '';
             const date = new Date(value);
             if (Number.isNaN(date.getTime())) return '';
-            return date.toLocaleDateString(undefined, {
+            return date.toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric'
             });
         }
 
-        function renderLearning(learning) {
-            if (!learning) {
-            titleEl.textContent = 'No learning yet';
-            dateEl.textContent = 'Check back tomorrow.';
-            contentEl.textContent = 'We add a new insight each day.';
-            noteEl.textContent = '';
-            articleLinkEl.style.display = 'none';
-            return;
-        }
+        function renderLearning(index) {
+            if (!allLearnings.length) {
+                titleEl.textContent = 'No learnings available yet';
+                dateEl.textContent = '';
+                counterEl.textContent = '';
+                contentEl.textContent = 'Check back soon for new insights.';
+                articleLinkEl.style.display = 'none';
+                updateButtons();
+                return;
+            }
 
-            titleEl.textContent = learning.title || 'Today\'s insight';
+            const learning = allLearnings[index];
+            titleEl.textContent = learning.title || 'Today\'s Insight';
             dateEl.textContent = formatDate(learning.date);
+            counterEl.textContent = `${index + 1} of ${allLearnings.length}`;
             contentEl.textContent = learning.learning || '';
-            noteEl.textContent = '';
+
             if (learning.articleUrl) {
                 articleLinkEl.href = learning.articleUrl;
                 articleLinkEl.style.display = 'inline-flex';
             } else {
                 articleLinkEl.style.display = 'none';
             }
+
+            updateButtons();
         }
 
-        function updateControls() {
-            if (!allLearnings.length) {
-                nextButton.disabled = true;
-                nextButton.textContent = 'No learnings yet';
-                return;
-            }
-            if (allLearnings.length === 1) {
-                nextButton.disabled = true;
-                nextButton.textContent = 'Only one so far';
-                return;
-            }
-            nextButton.disabled = false;
-            nextButton.textContent = 'Give me another';
+        function updateButtons() {
+            prevBtn.disabled = currentIndex === 0;
+            nextBtn.disabled = currentIndex === allLearnings.length - 1;
         }
 
-        function pickNextLearning() {
-            if (!allLearnings.length) {
-                renderLearning(null);
-                return;
+        function goToNext() {
+            if (currentIndex < allLearnings.length - 1) {
+                currentIndex++;
+                renderLearning(currentIndex);
             }
-            if (allLearnings.length === 1) {
-                renderLearning(allLearnings[0]);
-                noteEl.textContent = 'Only one learning so far. More are coming soon.';
-                updateControls();
-                return;
-            }
-            let nextIndex = currentIndex;
-            while (nextIndex === currentIndex) {
-                nextIndex = Math.floor(Math.random() * allLearnings.length);
-            }
-            currentIndex = nextIndex;
-            renderLearning(allLearnings[currentIndex]);
         }
 
-        async function loadLearning() {
+        function goToPrev() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                renderLearning(currentIndex);
+            }
+        }
+
+        async function loadLearnings() {
             try {
                 const response = await fetch('learnings.json', { cache: 'no-store' });
                 if (!response.ok) {
-                    throw new Error(`Failed to load learnings.json: ${response.status}`);
+                    throw new Error(`Failed to load learnings: ${response.status}`);
                 }
                 const learnings = await response.json();
                 allLearnings = Array.isArray(learnings) ? learnings : [];
                 currentIndex = 0;
-                renderLearning(allLearnings[0]);
-                if (!allLearnings.length) {
-                    noteEl.textContent = 'No learnings yet. Check back tomorrow.';
-                } else if (allLearnings.length === 1) {
-                    noteEl.textContent = 'Only one learning so far. More are coming soon.';
-                }
-                updateControls();
+                renderLearning(currentIndex);
             } catch (error) {
-                console.error('Error loading learning:', error);
-                contentEl.textContent = 'Could not load today\'s learning.';
-                noteEl.textContent = 'Tip: run a local server (e.g. `python3 -m http.server 8000`) instead of opening the file directly.';
-                updateControls();
+                console.error('Error loading learnings:', error);
+                titleEl.textContent = 'Error loading content';
+                contentEl.textContent = 'Could not load learnings. Please refresh the page.';
+                updateButtons();
             }
         }
 
-        nextButton.addEventListener('click', pickNextLearning);
-        loadLearning();
+        // Event listeners
+        nextBtn.addEventListener('click', goToNext);
+        prevBtn.addEventListener('click', goToPrev);
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') {
+                goToNext();
+            } else if (e.key === 'ArrowLeft') {
+                goToPrev();
+            }
+        });
+
+        // Load on page load
+        loadLearnings();
     </script>
 </body>
 </html>
