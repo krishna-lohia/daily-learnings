@@ -5,10 +5,17 @@ on:
     # Run every day at 3 AM UTC (8:30 AM IST)
     - cron: '0 3 * * *'
   workflow_dispatch: # Allow manual trigger
+  push:
+    branches:
+      - main
 
 jobs:
   update-learnings:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
 
     steps:
       - name: Checkout repository
@@ -18,6 +25,9 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
+
+      - name: Install dependencies
+        run: npm install
 
       - name: Check for new articles
         id: check
@@ -46,26 +56,8 @@ jobs:
         if: steps.check.outputs.has_new == 'true'
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: |
-          # Create a simple script to process the new article
-          cat > process-new.js << 'SCRIPT'
-          const https = require('https');
-          const fs = require('fs');
-
-          const API_KEY = process.env.ANTHROPIC_API_KEY;
-          const newUrl = process.env.NEW_URL;
-
-          async function processArticle() {
-            console.log('Processing new article...');
-            // We'll use a Task agent or manual processing here
-            // For now, just log that we detected a new article
-            console.log('New article URL:', newUrl);
-          }
-
-          processArticle();
-          SCRIPT
-
-          NEW_URL="${{ steps.check.outputs.new_url }}" node process-new.js
+          NEW_URL: ${{ steps.check.outputs.new_url }}
+        run: node process-new.js
 
       - name: Commit and push if changed
         if: steps.check.outputs.has_new == 'true'
@@ -75,3 +67,25 @@ jobs:
           git add learnings.json
           git diff --staged --quiet || git commit -m "Add new daily learning"
           git push
+
+  deploy:
+    needs: update-learnings
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: '.'
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
