@@ -4,6 +4,7 @@ import time
 import urllib.request
 from datetime import datetime
 from html import unescape
+from html.parser import HTMLParser
 
 
 ARCHIVE_URL = "https://thedailybrief.zerodha.com/api/v1/archive?sort=new&limit={limit}&offset={offset}"
@@ -26,43 +27,106 @@ def fetch_json(url):
     return json.loads(fetch(url))
 
 
-def strip_tags(html):
-    text = re.sub(r"<script.*?>.*?</script>", "", html, flags=re.S | re.I)
-    text = re.sub(r"<style.*?>.*?</style>", "", html, flags=re.S | re.I)
-    text = re.sub(r"<[^>]+>", " ", text)
+class ContentExtractor(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.capture = False
+        self.capture_article = False
+        self.depth = 0
+        self.text = []
+        self.article_text = []
+
+    def handle_starttag(self, tag, attrs):
+        attrs_dict = dict(attrs)
+        class_attr = attrs_dict.get("class", "")
+        if isinstance(class_attr, list):
+            class_attr = " ".join(class_attr)
+        class_attr = class_attr or ""
+
+        if tag == "article":
+            self.capture_article = True
+
+        if any(key in class_attr for key in [
+            "available-content",
+            "post-content",
+            "post-body",
+            "post-content-container",
+            "article-body",
+        ]):
+            self.capture = True
+            self.depth = 1
+            return
+
+        if self.capture:
+            self.depth += 1
+
+    def handle_endtag(self, tag):
+        if tag == "article":
+            self.capture_article = False
+        if self.capture:
+            self.depth -= 1
+            if self.depth <= 0:
+                self.capture = False
+
+    def handle_data(self, data):
+        if not data or not data.strip():
+            return
+        if self.capture:
+            self.text.append(data)
+        elif self.capture_article:
+            self.article_text.append(data)
+
+
+def normalize_text(text):
     text = unescape(text)
+    text = text.replace("\xa0", " ")
     text = re.sub(r"\s+", " ", text)
     return text.strip()
 
 
-def extract_between(html, marker):
-    if marker not in html:
+def strip_boilerplate(text):
+    if not text:
         return ""
-    start = html.find(marker)
-    snippet = html[start:start + 200000]
-    return snippet
+    patterns = [
+        r"our goal with the daily brief",
+        r"check out the audio",
+        r"spotify",
+        r"apple podcasts",
+        r"if you prefer video",
+        r"marketsbyzerodha",
+        r"thedailybriefing\.substack\.com",
+        r"this content is for informational purposes",
+        r"we publish a new episode every day",
+    ]
+    for pattern in patterns:
+        text = re.sub(pattern, " ", text, flags=re.I)
+    text = re.sub(r"\s+", " ", text).strip()
+    return text
 
 
 def extract_article_text(html):
-    snippet = extract_between(html, "available-content")
-    if not snippet:
-        snippet = extract_between(html, "body markup")
-    return strip_tags(snippet)
+    parser = ContentExtractor()
+    parser.feed(html)
+    text = " ".join(parser.text).strip()
+    if not text:
+        text = " ".join(parser.article_text).strip()
+    return normalize_text(text)
 
 
 def extract_title(html):
     match = re.search(r'<h1 class="post-title"[^>]*>(.*?)</h1>', html, flags=re.S | re.I)
     if match:
-        return strip_tags(match.group(1))
+        return normalize_text(match.group(1))
     match = re.search(r"<title>(.*?)</title>", html, flags=re.S | re.I)
-    return strip_tags(match.group(1)) if match else "Today I Learned"
+    return normalize_text(match.group(1)) if match else "Today I Learned"
 
 
 def build_learning(text):
-    sentences = [s.strip() for s in text.split(". ") if len(s.strip()) >= 60]
+    cleaned = strip_boilerplate(text)
+    sentences = [s.strip() for s in cleaned.split(". ") if len(s.strip()) >= 60]
     if sentences:
         return ". ".join(sentences[:4]) + "."
-    return text[:600]
+    return cleaned[:600]
 
 
 def load_existing():
@@ -101,6 +165,8 @@ def main():
                 if not content:
                     continue
                 learning = build_learning(content)
+                if not learning:
+                    continue
                 all_learnings.append({
                     "learning": learning,
                     "articleUrl": url,
