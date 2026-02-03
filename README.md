@@ -4,6 +4,8 @@ A daily learning website featuring insights from [The Daily Brief by Zerodha](ht
 
 Every day, one interesting insight about finance, business, or economics—explained in plain English.
 
+Live site: `https://krishna-lohia.github.io/daily-learnings` (default GitHub Pages URL)
+
 ## Features
 
 - 📚 Curated learnings from The Daily Brief
