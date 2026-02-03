@@ -1,4 +1,5 @@
 import json
+import os
 import re
 import time
 import urllib.request
@@ -141,7 +142,8 @@ def load_existing():
 
 
 def main():
-    existing = load_existing()
+    reset = os.environ.get("RESET") == "1"
+    existing = [] if reset else load_existing()
     seen = {item.get("articleUrl") for item in existing if isinstance(item, dict)}
     all_learnings = list(existing)
 
