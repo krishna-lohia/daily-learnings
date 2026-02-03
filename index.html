@@ -12,6 +12,7 @@
             <p class="eyebrow">A daily learning note</p>
             <h1>Today I Learned</h1>
             <p class="subtitle">One precise, plain‑English insight about money, markets, or business.</p>
+            <p class="subtitle idea-line">Come here once a day to learn something new. If you want depth, read the full source.</p>
         </header>
 
         <section class="card" id="learning-container">
@@ -20,9 +21,9 @@
                 <div class="learning-date" id="learning-date"></div>
             </div>
             <div class="learning" id="learning-content"></div>
+            <div class="note" id="learning-note"></div>
             <div class="card-actions">
                 <button class="primary" id="next-learning" type="button">Give me another</button>
-                <a class="archive-link" id="archive-link" href="archive.html">Archive (0)</a>
                 <a href="#" class="article-link" id="article-link" target="_blank" rel="noopener noreferrer">Read the source</a>
             </div>
         </section>
@@ -52,6 +53,7 @@
                 document.getElementById('learning-title').textContent = 'No learning yet';
                 document.getElementById('learning-date').textContent = 'Check back tomorrow.';
                 document.getElementById('learning-content').textContent = 'We add a new insight each day.';
+                document.getElementById('learning-note').textContent = '';
                 document.getElementById('article-link').style.display = 'none';
                 return;
             }
@@ -59,6 +61,7 @@
             document.getElementById('learning-title').textContent = learning.title || 'Today\'s insight';
             document.getElementById('learning-date').textContent = formatDate(learning.date);
             document.getElementById('learning-content').textContent = learning.learning || '';
+            document.getElementById('learning-note').textContent = '';
             if (learning.articleUrl) {
                 document.getElementById('article-link').href = learning.articleUrl;
                 document.getElementById('article-link').style.display = 'inline-flex';
@@ -74,6 +77,7 @@
             }
             if (allLearnings.length === 1) {
                 renderLearning(allLearnings[0]);
+                document.getElementById('learning-note').textContent = 'Only one learning so far. More are coming soon.';
                 return;
             }
             let nextIndex = currentIndex;
@@ -91,10 +95,10 @@
                 allLearnings = Array.isArray(learnings) ? learnings : [];
                 currentIndex = 0;
                 renderLearning(allLearnings[0]);
-                const archiveLink = document.getElementById('archive-link');
-                archiveLink.textContent = `Archive (${allLearnings.length})`;
                 if (!allLearnings.length) {
                     document.getElementById('next-learning').disabled = true;
+                } else if (allLearnings.length === 1) {
+                    document.getElementById('learning-note').textContent = 'Only one learning so far. More are coming soon.';
                 }
             } catch (error) {
                 console.error('Error loading learning:', error);
