@@ -31,7 +31,13 @@ jobs:
 
       - name: Seed learnings if empty
         run: |
-          COUNT=$(node -e "const fs=require('fs');const data=JSON.parse(fs.readFileSync('learnings.json','utf8'));console.log(Array.isArray(data)?data.length:0);")
+          COUNT=$(python3 - <<'PY'
+          import json
+          with open('learnings.json','r') as f:
+              data = json.load(f)
+          print(len(data) if isinstance(data, list) else 0)
+          PY
+          )
           if [ "$COUNT" -lt 5 ]; then
             node seed-learnings.js
           fi
