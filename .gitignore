@@ -1,5 +1,8 @@
 node_modules/
 *.js
+.env
+.env.local
+.env.*.local
 all-articles.json
 learnings-test.json
 learnings-progress.json
