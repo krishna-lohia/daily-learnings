@@ -10,7 +10,15 @@ ARCHIVE_URL = "https://thedailybrief.zerodha.com/api/v1/archive?sort=new&limit={
 
 
 def fetch(url):
-    with urllib.request.urlopen(url, timeout=30) as response:
+    req = urllib.request.Request(
+        url,
+        headers={
+            "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0 Safari/537.36",
+            "Accept": "text/html,application/json;q=0.9,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.9",
+        },
+    )
+    with urllib.request.urlopen(req, timeout=30) as response:
         return response.read().decode("utf-8", errors="ignore")
 
 
