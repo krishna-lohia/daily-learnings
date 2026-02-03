@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Today I Learned Archive</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <main class="page">
+        <header class="hero">
+            <p class="eyebrow">Archive</p>
+            <h1>All Learnings</h1>
+            <p class="subtitle">Browse every insight published so far.</p>
+        </header>
+
+        <section class="card archive-card">
+            <div id="archive-list" class="archive-list"></div>
+        </section>
+
+        <footer class="footer">
+            <a class="archive-link" href="index.html">Back to today</a>
+        </footer>
+    </main>
+
+    <script>
+        function formatDate(value) {
+            if (!value) return '';
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) return '';
+            return date.toLocaleDateString(undefined, {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text || '';
+            return div.innerHTML;
+        }
+
+        async function loadArchive() {
+            try {
+                const response = await fetch('learnings.json');
+                const learnings = await response.json();
+                const list = document.getElementById('archive-list');
+
+                if (!Array.isArray(learnings) || !learnings.length) {
+                    list.innerHTML = '<p class="archive-empty">No learnings yet.</p>';
+                    return;
+                }
+
+                list.innerHTML = learnings.map((item) => {
+                    const title = escapeHtml(item.title || 'Untitled');
+                    const date = escapeHtml(formatDate(item.date));
+                    const url = escapeHtml(item.articleUrl || '#');
+                    return `
+                        <article class="archive-item">
+                            <div class="archive-meta">${date}</div>
+                            <h2 class="archive-title">${title}</h2>
+                            <a class="article-link" href="${url}" target="_blank" rel="noopener noreferrer">Read the source</a>
+                        </article>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Error loading archive:', error);
+            }
+        }
+
+        loadArchive();
+    </script>
+</body>
+</html>

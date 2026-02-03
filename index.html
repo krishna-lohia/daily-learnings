@@ -21,7 +21,8 @@
             </div>
             <div class="learning" id="learning-content"></div>
             <div class="card-actions">
-                <button class="primary" id="next-learning">Give me another</button>
+                <button class="primary" id="next-learning" type="button">Give me another</button>
+                <a class="archive-link" id="archive-link" href="archive.html">Archive (0)</a>
                 <a href="#" class="article-link" id="article-link" target="_blank" rel="noopener noreferrer">Read the source</a>
             </div>
         </section>
@@ -71,7 +72,15 @@
                 renderLearning(null);
                 return;
             }
-            currentIndex = (currentIndex + 1) % allLearnings.length;
+            if (allLearnings.length === 1) {
+                renderLearning(allLearnings[0]);
+                return;
+            }
+            let nextIndex = currentIndex;
+            while (nextIndex === currentIndex) {
+                nextIndex = Math.floor(Math.random() * allLearnings.length);
+            }
+            currentIndex = nextIndex;
             renderLearning(allLearnings[currentIndex]);
         }
 
@@ -82,6 +91,11 @@
                 allLearnings = Array.isArray(learnings) ? learnings : [];
                 currentIndex = 0;
                 renderLearning(allLearnings[0]);
+                const archiveLink = document.getElementById('archive-link');
+                archiveLink.textContent = `Archive (${allLearnings.length})`;
+                if (!allLearnings.length) {
+                    document.getElementById('next-learning').disabled = true;
+                }
             } catch (error) {
                 console.error('Error loading learning:', error);
                 document.getElementById('learning-content').textContent = 'Could not load today\'s learning.';
