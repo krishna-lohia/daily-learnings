@@ -55,27 +55,44 @@ h1 {
   line-height: 1.6;
 }
 
-.description {
-  font-size: 0.938rem;
-  color: #6b5f53;
-  max-width: 500px;
-  margin: 0 auto;
-  line-height: 1.65;
-}
-
-.description a {
+.subtitle a {
   color: #8b6f47;
   text-decoration: none;
   border-bottom: 1px solid #d4c4a8;
   transition: border-color 0.2s ease;
 }
 
-.description a:hover {
+.subtitle a:hover {
   border-bottom-color: #8b6f47;
 }
 
-.idea-line {
-  margin-top: 14px;
+.how-it-works {
+  max-width: 520px;
+  margin: 32px auto 0;
+  padding: 24px 28px;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 4px;
+  border: 1px solid rgba(139, 111, 71, 0.15);
+}
+
+.how-title {
+  font-size: 0.813rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #8b6f47;
+  margin-bottom: 12px;
+}
+
+.how-text {
+  font-size: 0.938rem;
+  color: #5a4f45;
+  line-height: 1.65;
+  margin-bottom: 12px;
+}
+
+.how-text:last-child {
+  margin-bottom: 0;
 }
 
 .card {
