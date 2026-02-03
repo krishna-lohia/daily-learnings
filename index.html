@@ -7,50 +7,88 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Today I Learned</h1>
-        <div id="learning-container">
-            <div class="learning-title" id="learning-title"></div>
-            <div class="learning-date" id="learning-date"></div>
+    <main class="page">
+        <header class="hero">
+            <p class="eyebrow">Daily Brief, distilled</p>
+            <h1>Today I Learned</h1>
+            <p class="subtitle">One sharp, readable insight about money, markets, or business — in plain English.</p>
+        </header>
+
+        <section class="card" id="learning-container">
+            <div class="card-header">
+                <div class="learning-title" id="learning-title"></div>
+                <div class="learning-date" id="learning-date"></div>
+            </div>
             <div class="learning" id="learning-content"></div>
-            <a href="#" class="article-link" id="article-link" target="_blank" rel="noopener noreferrer">Read the full article</a>
-        </div>
-    </div>
+            <div class="card-actions">
+                <button class="primary" id="next-learning">Give me another</button>
+                <a href="#" class="article-link" id="article-link" target="_blank" rel="noopener noreferrer">Read the full article</a>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <span>Source: The Daily Brief by Zerodha</span>
+        </footer>
+    </main>
 
     <script>
+        let allLearnings = [];
+        let currentIndex = 0;
+
+        function formatDate(value) {
+            if (!value) return '';
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) return '';
+            return date.toLocaleDateString(undefined, {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+
+        function renderLearning(learning) {
+            if (!learning) {
+                document.getElementById('learning-title').textContent = 'No learning yet';
+                document.getElementById('learning-date').textContent = 'Check back tomorrow.';
+                document.getElementById('learning-content').textContent = 'We add a new insight each day.';
+                document.getElementById('article-link').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('learning-title').textContent = learning.title || 'Today\'s insight';
+            document.getElementById('learning-date').textContent = formatDate(learning.date);
+            document.getElementById('learning-content').textContent = learning.learning || '';
+            if (learning.articleUrl) {
+                document.getElementById('article-link').href = learning.articleUrl;
+                document.getElementById('article-link').style.display = 'inline-flex';
+            } else {
+                document.getElementById('article-link').style.display = 'none';
+            }
+        }
+
+        function pickNextLearning() {
+            if (!allLearnings.length) {
+                renderLearning(null);
+                return;
+            }
+            currentIndex = (currentIndex + 1) % allLearnings.length;
+            renderLearning(allLearnings[currentIndex]);
+        }
+
         async function loadLearning() {
             try {
                 const response = await fetch('learnings.json');
                 const learnings = await response.json();
-                const latestLearning = Array.isArray(learnings) ? learnings[0] : null;
-
-                if (!latestLearning) {
-                    document.getElementById('learning-title').textContent = 'No learning yet';
-                    document.getElementById('learning-date').textContent = 'Check back tomorrow.';
-                    document.getElementById('learning-content').textContent = 'We add a new insight each day.';
-                    document.getElementById('article-link').style.display = 'none';
-                    return;
-                }
-
-                document.getElementById('learning-title').textContent = latestLearning.title || 'Today\'s insight';
-                document.getElementById('learning-content').textContent = latestLearning.learning;
-                if (latestLearning.date) {
-                    const date = new Date(latestLearning.date);
-                    if (!Number.isNaN(date.getTime())) {
-                        document.getElementById('learning-date').textContent = date.toLocaleDateString(undefined, {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                        });
-                    }
-                }
-                document.getElementById('article-link').href = latestLearning.articleUrl;
+                allLearnings = Array.isArray(learnings) ? learnings : [];
+                currentIndex = 0;
+                renderLearning(allLearnings[0]);
             } catch (error) {
                 console.error('Error loading learning:', error);
                 document.getElementById('learning-content').textContent = 'Could not load today\'s learning.';
             }
         }
 
+        document.getElementById('next-learning').addEventListener('click', pickNextLearning);
         loadLearning();
     </script>
 </body>
