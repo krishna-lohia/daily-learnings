@@ -1,0 +1,77 @@
+name: Daily Learning Update
+
+on:
+  schedule:
+    # Run every day at 3 AM UTC (8:30 AM IST)
+    - cron: '0 3 * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  update-learnings:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Check for new articles
+        id: check
+        run: |
+          # Fetch latest articles from API
+          curl -s "https://thedailybrief.zerodha.com/api/v1/archive?sort=new&limit=5" > latest.json
+
+          # Get the latest article URL from our learnings.json
+          LAST_URL=$(cat learnings.json | grep -o '"articleUrl": "[^"]*"' | head -1 | cut -d'"' -f4)
+
+          # Get the newest article URL from API
+          NEW_URL=$(cat latest.json | grep -o '"canonical_url":"[^"]*"' | head -1 | cut -d'"' -f4)
+
+          echo "last_url=$LAST_URL" >> $GITHUB_OUTPUT
+          echo "new_url=$NEW_URL" >> $GITHUB_OUTPUT
+
+          if [ "$LAST_URL" != "$NEW_URL" ]; then
+            echo "has_new=true" >> $GITHUB_OUTPUT
+            echo "New article found!"
+          else
+            echo "has_new=false" >> $GITHUB_OUTPUT
+            echo "No new articles"
+          fi
+
+      - name: Process new article
+        if: steps.check.outputs.has_new == 'true'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          # Create a simple script to process the new article
+          cat > process-new.js << 'SCRIPT'
+          const https = require('https');
+          const fs = require('fs');
+
+          const API_KEY = process.env.ANTHROPIC_API_KEY;
+          const newUrl = process.env.NEW_URL;
+
+          async function processArticle() {
+            console.log('Processing new article...');
+            // We'll use a Task agent or manual processing here
+            // For now, just log that we detected a new article
+            console.log('New article URL:', newUrl);
+          }
+
+          processArticle();
+          SCRIPT
+
+          NEW_URL="${{ steps.check.outputs.new_url }}" node process-new.js
+
+      - name: Commit and push if changed
+        if: steps.check.outputs.has_new == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add learnings.json
+          git diff --staged --quiet || git commit -m "Add new daily learning"
+          git push
