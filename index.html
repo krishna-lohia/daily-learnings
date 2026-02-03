@@ -36,6 +36,12 @@
     <script>
         let allLearnings = [];
         let currentIndex = 0;
+        const nextButton = document.getElementById('next-learning');
+        const noteEl = document.getElementById('learning-note');
+        const titleEl = document.getElementById('learning-title');
+        const dateEl = document.getElementById('learning-date');
+        const contentEl = document.getElementById('learning-content');
+        const articleLinkEl = document.getElementById('article-link');
 
         function formatDate(value) {
             if (!value) return '';
@@ -50,24 +56,39 @@
 
         function renderLearning(learning) {
             if (!learning) {
-                document.getElementById('learning-title').textContent = 'No learning yet';
-                document.getElementById('learning-date').textContent = 'Check back tomorrow.';
-                document.getElementById('learning-content').textContent = 'We add a new insight each day.';
-                document.getElementById('learning-note').textContent = '';
-                document.getElementById('article-link').style.display = 'none';
+            titleEl.textContent = 'No learning yet';
+            dateEl.textContent = 'Check back tomorrow.';
+            contentEl.textContent = 'We add a new insight each day.';
+            noteEl.textContent = '';
+            articleLinkEl.style.display = 'none';
+            return;
+        }
+
+            titleEl.textContent = learning.title || 'Today\'s insight';
+            dateEl.textContent = formatDate(learning.date);
+            contentEl.textContent = learning.learning || '';
+            noteEl.textContent = '';
+            if (learning.articleUrl) {
+                articleLinkEl.href = learning.articleUrl;
+                articleLinkEl.style.display = 'inline-flex';
+            } else {
+                articleLinkEl.style.display = 'none';
+            }
+        }
+
+        function updateControls() {
+            if (!allLearnings.length) {
+                nextButton.disabled = true;
+                nextButton.textContent = 'No learnings yet';
                 return;
             }
-
-            document.getElementById('learning-title').textContent = learning.title || 'Today\'s insight';
-            document.getElementById('learning-date').textContent = formatDate(learning.date);
-            document.getElementById('learning-content').textContent = learning.learning || '';
-            document.getElementById('learning-note').textContent = '';
-            if (learning.articleUrl) {
-                document.getElementById('article-link').href = learning.articleUrl;
-                document.getElementById('article-link').style.display = 'inline-flex';
-            } else {
-                document.getElementById('article-link').style.display = 'none';
+            if (allLearnings.length === 1) {
+                nextButton.disabled = true;
+                nextButton.textContent = 'Only one so far';
+                return;
             }
+            nextButton.disabled = false;
+            nextButton.textContent = 'Give me another';
         }
 
         function pickNextLearning() {
@@ -77,7 +98,8 @@
             }
             if (allLearnings.length === 1) {
                 renderLearning(allLearnings[0]);
-                document.getElementById('learning-note').textContent = 'Only one learning so far. More are coming soon.';
+                noteEl.textContent = 'Only one learning so far. More are coming soon.';
+                updateControls();
                 return;
             }
             let nextIndex = currentIndex;
@@ -90,23 +112,29 @@
 
         async function loadLearning() {
             try {
-                const response = await fetch('learnings.json');
+                const response = await fetch('learnings.json', { cache: 'no-store' });
+                if (!response.ok) {
+                    throw new Error(`Failed to load learnings.json: ${response.status}`);
+                }
                 const learnings = await response.json();
                 allLearnings = Array.isArray(learnings) ? learnings : [];
                 currentIndex = 0;
                 renderLearning(allLearnings[0]);
                 if (!allLearnings.length) {
-                    document.getElementById('next-learning').disabled = true;
+                    noteEl.textContent = 'No learnings yet. Check back tomorrow.';
                 } else if (allLearnings.length === 1) {
-                    document.getElementById('learning-note').textContent = 'Only one learning so far. More are coming soon.';
+                    noteEl.textContent = 'Only one learning so far. More are coming soon.';
                 }
+                updateControls();
             } catch (error) {
                 console.error('Error loading learning:', error);
-                document.getElementById('learning-content').textContent = 'Could not load today\'s learning.';
+                contentEl.textContent = 'Could not load today\'s learning.';
+                noteEl.textContent = 'Tip: run a local server (e.g. `python3 -m http.server 8000`) instead of opening the file directly.';
+                updateControls();
             }
         }
 
-        document.getElementById('next-learning').addEventListener('click', pickNextLearning);
+        nextButton.addEventListener('click', pickNextLearning);
         loadLearning();
     </script>
 </body>
