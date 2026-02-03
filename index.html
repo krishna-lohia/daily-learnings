@@ -4,285 +4,54 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Today I Learned</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(16px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, system-ui, sans-serif;
-            background: #ffffff;
-            color: #18181b;
-            line-height: 1.7;
-            padding: 0;
-            min-height: 100vh;
-            animation: fadeIn 0.6s ease-out;
-        }
-
-        .container {
-            max-width: 640px;
-            margin: 0 auto;
-            padding: 80px 32px;
-        }
-
-        .intro {
-            margin-bottom: 64px;
-            padding-bottom: 48px;
-            border-bottom: 1px solid #e4e4e7;
-        }
-
-        .site-title {
-            font-size: 32px;
-            font-weight: 600;
-            color: #09090b;
-            margin-bottom: 16px;
-            letter-spacing: -0.025em;
-        }
-
-        .tagline {
-            font-size: 17px;
-            color: #71717a;
-            line-height: 1.6;
-            margin-bottom: 12px;
-        }
-
-        .archive-counter {
-            display: inline-block;
-            font-size: 13px;
-            color: #059669;
-            background: #ecfdf5;
-            padding: 6px 12px;
-            border-radius: 6px;
-            margin-top: 16px;
-            font-weight: 500;
-        }
-
-        .daily-note {
-            display: inline-block;
-            font-size: 14px;
-            color: #18181b;
-            background: #fafafa;
-            padding: 8px 16px;
-            border-radius: 6px;
-            margin-top: 16px;
-            margin-left: 8px;
-            font-weight: 500;
-        }
-
-        .learning-title {
-            font-family: 'Lora', Georgia, serif;
-            font-size: 40px;
-            font-weight: 600;
-            color: #09090b;
-            line-height: 1.3;
-            margin-bottom: 32px;
-            letter-spacing: -0.015em;
-        }
-
-        .learning-content {
-            font-size: 19px;
-            color: #27272a;
-            line-height: 1.75;
-            margin-bottom: 48px;
-            white-space: pre-line;
-        }
-
-        .cta {
-            padding-top: 40px;
-            border-top: 1px solid #e4e4e7;
-        }
-
-        .cta-label {
-            font-size: 14px;
-            color: #71717a;
-            margin-bottom: 16px;
-            font-weight: 500;
-        }
-
-        .button-group {
-            display: flex;
-            gap: 16px;
-            flex-wrap: wrap;
-        }
-
-        .read-more {
-            display: inline-block;
-            color: #09090b;
-            text-decoration: none;
-            font-size: 16px;
-            font-weight: 500;
-            padding: 0;
-            border-bottom: 2px solid #09090b;
-            transition: all 0.2s ease;
-        }
-
-        .read-more:hover {
-            opacity: 0.6;
-        }
-
-        .random-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: #059669;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .random-btn:hover {
-            background: #047857;
-            transform: translateY(-1px);
-        }
-
-        .random-btn:active {
-            transform: translateY(0);
-        }
-
-        footer {
-            margin-top: 72px;
-            padding-top: 32px;
-            border-top: 1px solid #e4e4e7;
-            font-size: 15px;
-            color: #a1a1aa;
-            line-height: 1.6;
-        }
-
-        footer a {
-            color: #52525b;
-            text-decoration: none;
-            border-bottom: 1px solid #d4d4d8;
-        }
-
-        footer a:hover {
-            color: #09090b;
-            border-bottom-color: #09090b;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                padding: 48px 24px;
-            }
-
-            .site-title {
-                font-size: 28px;
-            }
-
-            .tagline {
-                font-size: 16px;
-            }
-
-            .learning-title {
-                font-size: 32px;
-            }
-
-            .learning-content {
-                font-size: 18px;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <div class="intro">
-            <h1 class="site-title">Today I Learned</h1>
-            <p class="tagline">Every day, we read through The Daily Brief by Zerodha and pick out one interesting insight about finance, business, or economics—explained in plain English.</p>
-            <div>
-                <span class="archive-counter" id="counter">Loading...</span>
-                <span class="daily-note">One learning per day · Come back tomorrow</span>
-            </div>
+        <h1>Today I Learned</h1>
+        <div id="learning-container">
+            <div class="learning-title" id="learning-title"></div>
+            <div class="learning-date" id="learning-date"></div>
+            <div class="learning" id="learning-content"></div>
+            <a href="#" class="article-link" id="article-link" target="_blank" rel="noopener noreferrer">Read the full article</a>
         </div>
-
-        <article>
-            <h2 class="learning-title" id="title"></h2>
-            <div class="learning-content" id="content"></div>
-        </article>
-
-        <div class="cta">
-            <div class="cta-label">Want more?</div>
-            <div class="button-group">
-                <button class="random-btn" onclick="showRandomLearning()">Show me another →</button>
-                <a href="#" class="read-more" id="read-more" target="_blank">Read the full article</a>
-            </div>
-        </div>
-
-        <footer>
-            Content curated from <a href="https://thedailybrief.zerodha.com" target="_blank">The Daily Brief by Zerodha</a>
-        </footer>
     </div>
 
     <script>
-        let learnings = [];
-        let currentIndex = 0;
-
-        async function loadLearnings() {
+        async function loadLearning() {
             try {
                 const response = await fetch('learnings.json');
-                learnings = await response.json();
+                const learnings = await response.json();
+                const latestLearning = Array.isArray(learnings) ? learnings[0] : null;
 
-                // Update counter
-                document.getElementById('counter').textContent = `${learnings.length} learnings in archive`;
+                if (!latestLearning) {
+                    document.getElementById('learning-title').textContent = 'No learning yet';
+                    document.getElementById('learning-date').textContent = 'Check back tomorrow.';
+                    document.getElementById('learning-content').textContent = 'We add a new insight each day.';
+                    document.getElementById('article-link').style.display = 'none';
+                    return;
+                }
 
-                // Show today's learning
-                const today = new Date();
-                const daysSinceEpoch = Math.floor(today.getTime() / (1000 * 60 * 60 * 24));
-                currentIndex = daysSinceEpoch % learnings.length;
-
-                displayLearning(learnings[currentIndex]);
+                document.getElementById('learning-title').textContent = latestLearning.title || 'Today\'s insight';
+                document.getElementById('learning-content').textContent = latestLearning.learning;
+                if (latestLearning.date) {
+                    const date = new Date(latestLearning.date);
+                    if (!Number.isNaN(date.getTime())) {
+                        document.getElementById('learning-date').textContent = date.toLocaleDateString(undefined, {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        });
+                    }
+                }
+                document.getElementById('article-link').href = latestLearning.articleUrl;
             } catch (error) {
-                console.error('Error loading learnings:', error);
-                document.getElementById('counter').textContent = 'Archive';
+                console.error('Error loading learning:', error);
+                document.getElementById('learning-content').textContent = 'Could not load today\'s learning.';
             }
         }
 
-        function displayLearning(learning) {
-            const container = document.querySelector('article');
-            container.style.animation = 'none';
-            setTimeout(() => {
-                container.style.animation = 'fadeIn 0.4s ease-out';
-            }, 10);
-
-            document.getElementById('title').textContent = learning.title;
-            document.getElementById('content').textContent = learning.content;
-            document.getElementById('read-more').href = learning.articleUrl;
-
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function showRandomLearning() {
-            // Pick a random learning different from current
-            let newIndex;
-            do {
-                newIndex = Math.floor(Math.random() * learnings.length);
-            } while (newIndex === currentIndex && learnings.length > 1);
-
-            currentIndex = newIndex;
-            displayLearning(learnings[currentIndex]);
-        }
-
-        loadLearnings();
+        loadLearning();
     </script>
 </body>
 </html>

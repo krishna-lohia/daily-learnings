@@ -1,0 +1,18 @@
+{
+  "name": "daily-learnings",
+  "version": "1.0.0",
+  "description": "A daily learning website featuring insights from [The Daily Brief by Zerodha](https://thedailybrief.zerodha.com).",
+  "main": "extract-learnings.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "backfill": "node backfill.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.72.1",
+    "axios": "^1.13.4",
+    "cheerio": "^1.2.0"
+  }
+}
