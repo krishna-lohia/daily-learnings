@@ -5,29 +5,16 @@ on:
     # Run every day at 3 AM UTC (8:30 AM IST)
     - cron: '0 3 * * *'
   workflow_dispatch: # Allow manual trigger
-  push:
-    branches:
-      - main
 
 jobs:
   update-learnings:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      pages: write
-      id-token: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20'
-
-      - name: Install dependencies
-        run: npm install
 
       - name: Seed learnings if empty
         run: |
@@ -39,38 +26,18 @@ jobs:
           PY
           )
           if [ "$COUNT" -lt 5 ]; then
-            node seed-learnings.js
+            python3 seed_learnings.py
           fi
 
       - name: Check for new articles
         id: check
-        run: |
-          # Fetch latest articles from API
-          curl -s "https://thedailybrief.zerodha.com/api/v1/archive?sort=new&limit=5" > latest.json
-
-          # Get the latest article URL from our learnings.json
-          LAST_URL=$(cat learnings.json | grep -o '"articleUrl": "[^"]*"' | head -1 | cut -d'"' -f4)
-
-          # Get the newest article URL from API
-          NEW_URL=$(cat latest.json | grep -o '"canonical_url":"[^"]*"' | head -1 | cut -d'"' -f4)
-
-          echo "last_url=$LAST_URL" >> $GITHUB_OUTPUT
-          echo "new_url=$NEW_URL" >> $GITHUB_OUTPUT
-
-          if [ "$LAST_URL" != "$NEW_URL" ]; then
-            echo "has_new=true" >> $GITHUB_OUTPUT
-            echo "New article found!"
-          else
-            echo "has_new=false" >> $GITHUB_OUTPUT
-            echo "No new articles"
-          fi
+        run: python3 check_new.py
 
       - name: Process new article
         if: steps.check.outputs.has_new == 'true'
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           NEW_URL: ${{ steps.check.outputs.new_url }}
-        run: node process-new.js
+        run: python3 process_new.py
 
       - name: Commit and push if changed
         if: steps.check.outputs.has_new == 'true'
@@ -80,25 +47,3 @@ jobs:
           git add learnings.json
           git diff --staged --quiet || git commit -m "Add new daily learning"
           git push
-
-  deploy:
-    needs: update-learnings
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-      - name: Setup Pages
-        uses: actions/configure-pages@v3
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: '.'
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v2
